@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Sortowanie Jesiennych Skarbów</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main id="game">
+    <header class="topbar">
+      <div class="title">
+        🍁 Sortowanie Jesiennych Skarbów
+      </div>
+      <div class="hud">
+        <div class="score">Punkty: <span id="score">0</span>/10</div>
+        <button id="restartBtn" class="ghost">Restart</button>
+      </div>
+    </header>
+
+    <section class="game-wrap">
+      <div id="playfield" class="playfield" aria-label="Pole gry"></div>
+
+      <aside id="bins" class="bins" aria-label="Kosze na skarby">
+        <!-- Kosze są tworzone dynamicznie przez JS -->
+      </aside>
+    </section>
+  </main>
+
+  <!-- Modal wygranej -->
+  <div id="winModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+    <div class="modal-card">
+      <h2 id="winTitle">Brawo! Ukończyłeś grę 🎉</h2>
+      <p>Zebrałeś 10 punktów!</p>
+      <div class="trophy">
+        <div class="trophy-icon" id="trophyIcon" aria-hidden="true"></div>
+        <div class="trophy-caption">Twoje trofeum</div>
+      </div>
+      <button id="playAgain" class="primary">Zagraj ponownie</button>
+    </div>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>

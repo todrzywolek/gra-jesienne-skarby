@@ -1,0 +1,143 @@
+:root{
+  --bg:#f8fafc;
+  --ink:#0f172a;
+  --muted:#475569;
+  --accent:#d97706; /* jesienny pomarańcz */
+  --good:#16a34a;
+  --card:#ffffff;
+  --shadow:0 6px 24px rgba(15,23,42,.08);
+  --chest:#b5813d;       /* kolor skrzyni */
+  --chest-dark:#8c632c;  /* pokrywa */
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Noto Sans', Ubuntu, Cantarell, 'Helvetica Neue', Arial, "Apple Color Emoji","Segoe UI Emoji";
+  background:var(--bg);
+  color:var(--ink);
+}
+
+.topbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:1rem;
+  padding:1rem clamp(1rem, 3vw, 2rem);
+  background:var(--card);
+  box-shadow:var(--shadow);
+  position:sticky; top:0; z-index:20;
+}
+.title{font-weight:700; font-size:clamp(18px,2.6vw,24px)}
+.hud{display:flex; align-items:center; gap:.75rem}
+.score{font-weight:600}
+
+button{
+  appearance:none; border:0; border-radius:14px; padding:.6rem 1rem; font-weight:600;
+  background:var(--accent); color:#fff; box-shadow:var(--shadow);
+}
+button.ghost{background:transparent; color:var(--muted); box-shadow:none; border:2px solid #e2e8f0}
+button.primary{background:var(--good);}
+
+.game-wrap{
+  display:grid;
+  grid-template-columns: 1fr minmax(220px, 28vw);
+  gap:clamp(.75rem,2vw,1.25rem);
+  padding:clamp(1rem, 2.5vw, 2rem);
+  align-items:stretch;
+}
+
+.playfield{
+  position:relative;
+  min-height:min(72vh, 1200px);
+  background:linear-gradient(0deg,#fff, #fff), conic-gradient(from 0deg,#fef3c7,#ffedd5,#f1f5f9,#e2e8f0,#fef3c7);
+  border-radius:18px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+  touch-action:none; /* aby pointermove działał płynnie na dotyku */
+}
+
+.bins{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap:clamp(.6rem,1.6vw,1rem);
+  align-content:start;
+}
+
+.bin{
+  display:flex; align-items:center; gap:.75rem;
+  background:var(--card);
+  border-radius:16px;
+  box-shadow:var(--shadow);
+  padding:.75rem;
+  min-height:84px;
+  position:relative;
+}
+
+/* Rysunek skrzyni */
+.bin .chest{
+  width:82px; height:64px; position:relative; flex:0 0 auto;
+  border-radius:10px;
+  background:var(--chest);
+  box-shadow:inset 0 -6px 0 rgba(0,0,0,.08);
+}
+.bin .chest::before{
+  content:""; position:absolute; left:0; right:0; top:-12px; height:20px;
+  background:var(--chest-dark);
+  border-radius:10px 10px 4px 4px;
+  box-shadow:0 3px 0 rgba(0,0,0,.06);
+}
+.bin .label{
+  position:absolute; left:50%; top:38%; transform:translate(-50%,-50%);
+  width:42px; height:42px; display:grid; place-items:center;
+  background:#fff; border-radius:12px; box-shadow:0 2px 0 rgba(0,0,0,.08);
+  overflow:hidden;
+}
+.bin .name{font-weight:700; color:#0f172a; font-size:1rem}
+
+/* Spadający skarb */
+.treasure{
+  position:absolute; width:72px; height:72px;
+  display:grid; place-items:center;
+  border-radius:14px;
+  background:#fff;
+  box-shadow:var(--shadow);
+  user-select:none; touch-action:none;
+}
+.treasure img, .treasure svg{
+  width:64px; height:64px; pointer-events:none; display:block;
+}
+
+/* Podczas przeciągania lekka skala */
+.treasure.dragging{transform:scale(1.06)}
+.treasure.correct{outline:4px solid rgba(22,163,74,.35)}
+.treasure.wrong{outline:4px solid rgba(220,38,38,.35)}
+
+/* Modal */
+.modal{
+  position:fixed; inset:0; display:grid; place-items:center; background:rgba(2,6,23,.55);
+}
+.modal.hidden{display:none}
+.modal-card{
+  width:min(92vw,560px);
+  background:var(--card); border-radius:18px; box-shadow:var(--shadow);
+  padding:1.25rem;
+  text-align:center;
+}
+.trophy{display:grid; place-items:center; gap:.5rem; margin:1rem 0}
+.trophy-icon{width:96px; height:96px; display:grid; place-items:center; background:#fff; border-radius:24px; box-shadow:var(--shadow)}
+.trophy-icon img{width:84px; height:84px}
+
+@media (max-width: 900px){
+  .game-wrap{grid-template-columns: 1fr; }
+  .bins{grid-template-columns: repeat(2, minmax(0,1fr));}
+}
+
+/* Skarb w trybie globalnym (podczas przeciągania) może wyjechać poza pole gry */
+.treasure.global{
+  position: fixed;        /* klucz: działa w całym widoku, nie tylko w playfield */
+  left: 0; top: 0;
+  transform: none !important; /* nadpisujemy translate używany normalnie */
+  z-index: 50;            /* nad skrzyniami */
+}
