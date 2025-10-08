@@ -21,8 +21,14 @@
 
   // Konfiguracja gry
   const TARGET_SCORE = 10;
-  const FALL_SPEED_PX_PER_SEC = 120; // wolne tempo dla 5-6 latków
-  const TREASURE_SIZE = 72;
+  const FALL_SPEED_PX_PER_SEC = 60; // wolne tempo dla 5-6 latków
+  const TREASURE_SIZE = 80;
+  
+  // Dynamic treasure size based on screen size
+  function getTreasureSize() {
+    const isTablet = window.innerWidth >= 1024 && window.innerWidth <= 1400 && window.innerHeight >= 700;
+    return isTablet ? 84 : 80;
+  }
 
   // 7 skarbów (id musi być proste; name do czytania; svg -> mała, lekka grafika)
   const ASSETS = [
@@ -161,9 +167,10 @@
 
     // losowe X w obrębie pola gry
     const pfRect = playfield.getBoundingClientRect();
-    const maxX = pfRect.width - TREASURE_SIZE - 8;
+    const treasureSize = getTreasureSize();
+    const maxX = pfRect.width - treasureSize - 8;
     const x = Math.max(8, Math.floor(Math.random()*maxX));
-    const y = -TREASURE_SIZE; // start nad górną krawędzią
+    const y = -treasureSize; // start nad górną krawędzią
     position(el, x, y);
 
     playfield.appendChild(el);
@@ -366,7 +373,8 @@ function attachDrag(el){
   window.addEventListener('resize', ()=>{
     if(!current) return;
     const pfRect = playfield.getBoundingClientRect();
-    current.x = Math.min(current.x, Math.max(0, pfRect.width - TREASURE_SIZE));
+    const treasureSize = getTreasureSize();
+    current.x = Math.min(current.x, Math.max(0, pfRect.width - treasureSize));
     position(current.el, current.x, current.y);
   });
 })();

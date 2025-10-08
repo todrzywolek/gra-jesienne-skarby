@@ -24,33 +24,36 @@ body{
   align-items:center;
   justify-content:space-between;
   gap:1rem;
-  padding:1rem clamp(1rem, 3vw, 2rem);
+  padding:1.25rem clamp(1rem, 3vw, 2rem);
   background:var(--card);
   box-shadow:var(--shadow);
   position:sticky; top:0; z-index:20;
 }
-.title{font-weight:700; font-size:clamp(18px,2.6vw,24px)}
+.title{font-weight:700; font-size:clamp(20px,2.8vw,26px)}
 .hud{display:flex; align-items:center; gap:.75rem}
 .score{font-weight:600}
 
 button{
-  appearance:none; border:0; border-radius:14px; padding:.6rem 1rem; font-weight:600;
+  appearance:none; border:0; border-radius:14px; padding:.75rem 1.25rem; font-weight:600;
   background:var(--accent); color:#fff; box-shadow:var(--shadow);
+  font-size: 1rem;
 }
 button.ghost{background:transparent; color:var(--muted); box-shadow:none; border:2px solid #e2e8f0}
 button.primary{background:var(--good);}
 
 .game-wrap{
   display:grid;
-  grid-template-columns: 1fr minmax(220px, 28vw);
-  gap:clamp(.75rem,2vw,1.25rem);
+  grid-template-columns: 1fr minmax(240px, 320px);
+  gap:clamp(.75rem,2vw,1.5rem);
   padding:clamp(1rem, 2.5vw, 2rem);
   align-items:stretch;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .playfield{
   position:relative;
-  min-height:min(72vh, 1200px);
+  min-height:min(75vh, 600px);
   background:linear-gradient(0deg,#fff, #fff), conic-gradient(from 0deg,#fef3c7,#ffedd5,#f1f5f9,#e2e8f0,#fef3c7);
   border-radius:18px;
   box-shadow:var(--shadow);
@@ -70,8 +73,8 @@ button.primary{background:var(--good);}
   background:var(--card);
   border-radius:16px;
   box-shadow:var(--shadow);
-  padding:.75rem;
-  min-height:84px;
+  padding:1rem;
+  min-height:90px;
   position:relative;
 }
 
@@ -98,15 +101,15 @@ button.primary{background:var(--good);}
 
 /* Spadający skarb */
 .treasure{
-  position:absolute; width:72px; height:72px;
+  position:absolute; width:80px; height:80px;
   display:grid; place-items:center;
-  border-radius:14px;
+  border-radius:16px;
   background:#fff;
   box-shadow:var(--shadow);
   user-select:none; touch-action:none;
 }
 .treasure img, .treasure svg{
-  width:64px; height:64px; pointer-events:none; display:block;
+  width:72px; height:72px; pointer-events:none; display:block;
 }
 
 /* Podczas przeciągania lekka skala */
@@ -128,6 +131,37 @@ button.primary{background:var(--good);}
 .trophy{display:grid; place-items:center; gap:.5rem; margin:1rem 0}
 .trophy-icon{width:96px; height:96px; display:grid; place-items:center; background:#fff; border-radius:24px; box-shadow:var(--shadow)}
 .trophy-icon img{width:84px; height:84px}
+
+/* Tablet landscape optimization (1280x800 and similar) */
+@media (min-width: 1024px) and (max-width: 1400px) and (min-height: 700px) {
+  .game-wrap{
+    grid-template-columns: 1fr minmax(280px, 350px);
+    gap: 1.5rem;
+    padding: 1.5rem;
+  }
+  .playfield{
+    min-height: min(70vh, 550px);
+  }
+  .bins{
+    gap: 1rem;
+  }
+  .bin{
+    min-height: 95px;
+    padding: 1.25rem;
+  }
+  .bin .chest{
+    width: 88px; height: 68px;
+  }
+  .bin .label{
+    width: 46px; height: 46px;
+  }
+  .treasure{
+    width: 84px; height: 84px;
+  }
+  .treasure img, .treasure svg{
+    width: 76px; height: 76px;
+  }
+}
 
 @media (max-width: 900px){
   .game-wrap{grid-template-columns: 1fr; }
