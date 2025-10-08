@@ -141,7 +141,7 @@ button.primary{background:var(--good);}
     padding: 1.5rem;
   }
   .playfield{
-    min-height: min(70vh, 550px);
+    min-height: min(50vh, 400px);
   }
   .bins{
     gap: 1rem;

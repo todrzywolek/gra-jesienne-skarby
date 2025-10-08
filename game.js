@@ -219,7 +219,8 @@ function attachDrag(el){
     pointerId = e.pointerId;
     current.dragging = true;
     current.el.classList.add('dragging');
-    current.lastSafe = {x: current.x, y: current.y}; // pozycja do której wracamy
+    // Zapamiętaj aktualną pozycję jako bezpieczną (gdzie był gdy zaczęliśmy przeciągać)
+    current.lastSafe = {x: current.x, y: current.y};
 
     // przełącz na tryb "globalny" (fixed) – dzięki temu możemy wyjechać nad skrzynie
     const startInViewport = toViewportCoords(current.x, current.y);
@@ -254,7 +255,9 @@ function attachDrag(el){
 
     // Sprawdź trafienie w kosz (na bazie globalnego położenia)
     const hitBin = detectBinHit(current.el);
+    
     if(hitBin && hitBin.dataset.accept === current.id){
+      // Poprawny kosz -> punkt i nowy skarb
       current.el.classList.add('correct');
       incrementScore();
       current.el.remove();
@@ -264,20 +267,11 @@ function attachDrag(el){
       return;
     }
 
-    // Zły kosz albo brak kosza -> wracamy do ostatniej bezpiecznej pozycji i kontynuujemy opadanie
-    current.el.classList.remove('wrong'); // na wszelki wypadek
-    current.el.classList.remove('global');
-    current.el.style.position = 'absolute';
-    current.dragging = false;
-    globalDragging = false;
-
-    // odtwórz translate w układzie playfield
-    current.x = current.lastSafe.x;
-    current.y = current.lastSafe.y;
-    position(current.el, current.x, current.y);
-    current.el.classList.remove('dragging');
-
+    // Zły kosz albo brak kosza -> usuń skarb i stwórz nowy
+    current.el.remove();
+    current = null;
     cleanupDrag();
+    if(running) spawnTreasure();
   };
 
   function cleanupDrag(){
