@@ -27,7 +27,12 @@
   // Dynamic treasure size based on screen size
   function getTreasureSize() {
     const isTablet = window.innerWidth >= 1024 && window.innerWidth <= 1400 && window.innerHeight >= 700;
-    return isTablet ? 84 : 80;
+    const isIPhone12Pro = window.innerWidth <= 390 && window.innerHeight <= 900;
+    const isMobile = window.innerWidth <= 480;
+    if (isTablet) return 84;
+    if (isIPhone12Pro) return 55;
+    if (isMobile) return 60;
+    return 80;
   }
 
   // 7 skarbów (id musi być proste; name do czytania; svg -> mała, lekka grafika)
