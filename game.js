@@ -187,9 +187,42 @@ const updateSourceImage = () => {
   if (sourceImage) {
     sourceImage.src = imageSrc;
     sourceImage.alt = 'Puzzle image';
+    
+    // Update CSS variable when image loads to match actual rendered size
+    sourceImage.onload = () => {
+      updatePuzzleSize();
+    };
+    
+    // Also update if image is already loaded
+    if (sourceImage.complete) {
+      updatePuzzleSize();
+    }
   }
   if (sourceLink) {
     sourceLink.href = imageSrc;
+  }
+};
+
+// Update puzzle piece sizes based on actual image size
+const updatePuzzleSize = () => {
+  const sourceImage = document.querySelector('.puzzle-source-image');
+  const puzzleBoard = document.getElementById('puzzleBoard');
+  
+  if (sourceImage && puzzleBoard) {
+    // Get the actual rendered size of the image (considering object-fit: contain)
+    const rect = sourceImage.getBoundingClientRect();
+    const actualSize = Math.min(rect.width, rect.height);
+    
+    // Set CSS variable on the container so puzzle pieces scale accordingly
+    const container = sourceImage.closest('.puzzle-container');
+    if (container) {
+      container.style.setProperty('--image-size', `${actualSize}px`);
+      
+      // Also update grid gap proportionally
+      const baseGap = 8;
+      const gapRatio = actualSize / 280; // 280 is the base image size
+      container.style.setProperty('--grid-gap', `${baseGap * gapRatio}px`);
+    }
   }
 };
 
@@ -197,5 +230,14 @@ const updateSourceImage = () => {
 window.addEventListener('DOMContentLoaded', () => {
   updateSourceImage();
   resetGame();
+  
+  // Update puzzle size on window resize
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      updatePuzzleSize();
+    }, 100);
+  });
 });
 

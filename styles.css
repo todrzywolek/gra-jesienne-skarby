@@ -27,6 +27,11 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    box-sizing: border-box;
+    overflow-y: auto;
+    overflow-x: hidden;
+    --image-size: 280px;
+    --grid-gap: 8px;
 }
 
 .puzzle-container > h1 {
@@ -35,26 +40,42 @@ body {
     color: #444;
 }
 
+.puzzle-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.puzzle-image-wrapper {
+    display: inline-block;
+    margin-bottom: 15px;
+}
+
 .puzzle-source-image {
     width: 280px;
     height: 280px;
     object-fit: contain;
     border-radius: 8px;
-    margin-bottom: 15px;
     border: 3px solid #ddd;
+    display: block;
+    --image-size: 280px;
 }
 
 .puzzle-board {
     display: grid;
-    grid-template-columns: repeat(3, 180px);
-    grid-gap: 8px;
+    grid-template-columns: repeat(3, calc((var(--image-size, 280px) - 2 * var(--grid-gap, 8px)) / 3));
+    grid-template-rows: repeat(3, calc((var(--image-size, 280px) - 2 * var(--grid-gap, 8px)) / 3));
+    gap: var(--grid-gap, 8px);
     margin: 10px auto;
     justify-content: center;
+    width: fit-content;
 }
 
 .puzzle-piece {
-    width: 180px;
-    height: 180px;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 1;
     border: 3px solid #ddd;
     border-radius: 8px;
     cursor: grab;
@@ -63,6 +84,7 @@ body {
     touch-action: none;
     -webkit-user-select: none;
     user-select: none;
+    box-sizing: border-box;
 }
 
 .puzzle-piece:active,
@@ -168,5 +190,217 @@ body {
 .modal-button:active {
     background: #922d4d;
     transform: scale(0.95);
+}
+
+/* Responsive Design for Tablets (1280x800 and similar) - Landscape */
+@media screen and (max-height: 900px) and (min-width: 1025px) {
+    body {
+        padding: 8px;
+    }
+    
+    .puzzle-container {
+        padding: 12px 20px;
+        max-height: 98vh;
+        max-width: 100%;
+        width: 100%;
+        --image-size: 300px;
+        --grid-gap: 6px;
+    }
+    
+    .puzzle-container > h1 {
+        font-size: 1.6rem;
+        margin: 0 0 12px 0;
+    }
+    
+    .puzzle-content {
+        flex-direction: row;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 25px;
+        width: 100%;
+        max-width: 1200px;
+    }
+    
+    .puzzle-image-wrapper {
+        margin-bottom: 0;
+        flex-shrink: 0;
+    }
+    
+    .puzzle-source-image {
+        width: 300px;
+        height: 300px;
+        --image-size: 300px;
+    }
+    
+    .puzzle-board {
+        margin: 0;
+        flex-shrink: 0;
+    }
+    
+    .reset-button {
+        margin-top: 12px;
+        padding: 10px 35px;
+        font-size: 1.1rem;
+        min-height: 44px;
+    }
+}
+
+/* Responsive Design for Tablets (1280x800 and similar) - Portrait or constrained height */
+@media screen and (max-height: 900px) and (min-width: 768px) and (max-width: 1024px) {
+    .puzzle-container {
+        padding: 10px;
+        max-height: 98vh;
+        --image-size: 200px;
+        --grid-gap: 6px;
+    }
+    
+    .puzzle-container > h1 {
+        font-size: 1.5rem;
+        margin: 0 0 8px 0;
+    }
+    
+    .puzzle-source-image {
+        width: 200px;
+        height: 200px;
+        margin-bottom: 10px;
+    }
+    
+    .puzzle-board {
+        margin: 8px auto;
+    }
+    
+    .reset-button {
+        margin-top: 10px;
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        min-height: 45px;
+    }
+}
+
+/* Responsive Design for Smaller Tablets and Large Phones (with more vertical space) */
+@media screen and (max-width: 1024px) and (min-width: 600px) and (min-height: 901px) {
+    .puzzle-container {
+        padding: 12px;
+        --image-size: 200px;
+        --grid-gap: 5px;
+    }
+    
+    .puzzle-container > h1 {
+        font-size: 1.5rem;
+        margin: 0 0 8px 0;
+    }
+    
+    .puzzle-source-image {
+        width: 200px;
+        height: 200px;
+        margin-bottom: 10px;
+    }
+    
+    .puzzle-board {
+        margin: 8px auto;
+    }
+    
+    .reset-button {
+        margin-top: 10px;
+        padding: 12px 30px;
+        font-size: 1.1rem;
+        min-height: 45px;
+        min-width: 130px;
+    }
+}
+
+/* Responsive Design for Mobile Devices */
+@media screen and (max-width: 599px) {
+    body {
+        padding: 5px;
+    }
+    
+    .puzzle-container {
+        padding: 10px;
+        max-height: 98vh;
+        border-radius: 10px;
+        --image-size: min(180px, 45vw);
+        --grid-gap: 4px;
+    }
+    
+    .puzzle-container > h1 {
+        font-size: 1.3rem;
+        margin: 0 0 6px 0;
+    }
+    
+    .puzzle-source-image {
+        width: min(180px, 45vw);
+        height: min(180px, 45vw);
+        margin-bottom: 8px;
+        border-width: 2px;
+    }
+    
+    .puzzle-board {
+        margin: 6px auto;
+    }
+    
+    .puzzle-piece {
+        border-width: 2px;
+    }
+    
+    .reset-button {
+        margin-top: 10px;
+        padding: 10px 25px;
+        font-size: 1rem;
+        min-height: 42px;
+        min-width: 110px;
+    }
+    
+    .modal-content {
+        padding: 25px 20px;
+        max-width: 95%;
+    }
+    
+    .modal-content h2 {
+        font-size: 1.5rem;
+    }
+    
+    .modal-content p {
+        font-size: 1.1rem;
+    }
+    
+    .modal-button {
+        padding: 10px 25px;
+        font-size: 1rem;
+        min-height: 42px;
+        min-width: 110px;
+    }
+}
+
+/* Landscape orientation for mobile */
+@media screen and (max-width: 599px) and (orientation: landscape) {
+    .puzzle-container {
+        padding: 6px;
+        max-height: 100vh;
+        --image-size: min(120px, 20vh);
+        --grid-gap: 3px;
+    }
+    
+    .puzzle-container > h1 {
+        font-size: 1.1rem;
+        margin: 0 0 4px 0;
+    }
+    
+    .puzzle-source-image {
+        width: min(120px, 20vh);
+        height: min(120px, 20vh);
+        margin-bottom: 4px;
+    }
+    
+    .puzzle-board {
+        margin: 4px auto;
+    }
+    
+    .reset-button {
+        margin-top: 6px;
+        padding: 8px 20px;
+        font-size: 0.9rem;
+        min-height: 38px;
+    }
 }
 
