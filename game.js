@@ -4,6 +4,7 @@ let isShuffling = false;
 let canGuess = false;
 let shuffleInterval = null;
 let shuffleCount = 0;
+let isSwapping = false; // Flag to prevent overlapping swaps
 const maxShuffles = 8; // Number of shuffles for kids (slow enough to follow)
 
 // Get DOM elements
@@ -20,21 +21,37 @@ const balls = Array.from(document.querySelectorAll('.ball'));
 
 // Function to swap two cups visually
 const swapCups = (index1, index2) => {
+    // Prevent overlapping swaps
+    if (isSwapping) return;
+    
     const currentCups = Array.from(cupsContainer.querySelectorAll('.cup'));
     const cup1 = currentCups[index1];
     const cup2 = currentCups[index2];
 
-    if (!cup1 || !cup2) return;
+    if (!cup1 || !cup2 || cup1 === cup2) return;
 
-    // Get positions
+    isSwapping = true;
+
+    // Reset any existing transforms first to get accurate positions
+    cup1.style.transform = '';
+    cup2.style.transform = '';
+    cup1.classList.remove('shuffling');
+    cup2.classList.remove('shuffling');
+    
+    // Force a reflow to ensure transforms are reset
+    void cup1.offsetHeight;
+    void cup2.offsetHeight;
+
+    // Get positions relative to container
+    const containerRect = cupsContainer.getBoundingClientRect();
     const rect1 = cup1.getBoundingClientRect();
     const rect2 = cup2.getBoundingClientRect();
 
-    // Calculate relative positions
-    const x1 = rect1.left + rect1.width / 2;
-    const y1 = rect1.top + rect1.height / 2;
-    const x2 = rect2.left + rect2.width / 2;
-    const y2 = rect2.top + rect2.height / 2;
+    // Calculate positions relative to container
+    const x1 = rect1.left - containerRect.left + rect1.width / 2;
+    const y1 = rect1.top - containerRect.top + rect1.height / 2;
+    const x2 = rect2.left - containerRect.left + rect2.width / 2;
+    const y2 = rect2.top - containerRect.top + rect2.height / 2;
 
     // Calculate distances
     const deltaX = x2 - x1;
@@ -72,6 +89,9 @@ const swapCups = (index1, index2) => {
 
         // Update cup indices
         updateCupIndices();
+        
+        // Allow next swap
+        isSwapping = false;
     }, 800); // Match CSS transition duration
 };
 
@@ -79,6 +99,13 @@ const swapCups = (index1, index2) => {
 const shuffleCups = () => {
     if (shuffleCount >= maxShuffles) {
         stopShuffling();
+        return;
+    }
+    
+    // Wait if a swap is in progress
+    if (isSwapping) {
+        // Retry after a short delay
+        setTimeout(() => shuffleCups(), 100);
         return;
     }
     
@@ -209,11 +236,15 @@ const startGame = () => {
     instructionText.textContent = 'Przygotowuję grę...';
     
     // Reset cup styles
+    isSwapping = false; // Reset swap flag
     cups.forEach(cup => {
         cup.style.pointerEvents = 'auto';
         cup.style.transform = '';
         cup.classList.remove('selected', 'shuffling');
     });
+    
+    // Force a reflow to ensure all transforms are reset
+    void cupsContainer.offsetHeight;
     
     // Reset ball positions - hide all balls
     balls.forEach(ball => {
