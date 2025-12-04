@@ -1,243 +1,279 @@
-// Array of 10 images
-const imagePaths = [
-  'img/1.png',
-  'img/2.png',
-  'img/3.png',
-  'img/4.png',
-  'img/5.png',
-  'img/6.png',
-  'img/7.png',
-  'img/8.png',
-  'img/9.png',
-  'img/10.png'
-];
+// Game state
+let ballPosition = 0; // 0, 1, or 2 - tracks which cup (by current DOM position) has the ball
+let isShuffling = false;
+let canGuess = false;
+let shuffleInterval = null;
+let shuffleCount = 0;
+const maxShuffles = 8; // Number of shuffles for kids (slow enough to follow)
 
-// Current image source (will be set randomly)
-let imageSrc = imagePaths[Math.floor(Math.random() * imagePaths.length)];
+// Get DOM elements
+const cupsContainer = document.getElementById('cupsContainer');
+const playButton = document.getElementById('playButton');
+const instructionText = document.getElementById('instructionText');
+const resultModal = document.getElementById('resultModal');
+const resultTitle = document.getElementById('resultTitle');
+const resultMessage = document.getElementById('resultMessage');
 
-// Function to select a new random image
-const selectNewRandomImage = () => {
-  imageSrc = imagePaths[Math.floor(Math.random() * imagePaths.length)];
-};
+// Initialize cups
+const cups = Array.from(document.querySelectorAll('.cup'));
+const balls = Array.from(document.querySelectorAll('.ball'));
 
-const gridSize = 3; // 3x3 grid (9 pieces) - perfect for 5-6 year olds
-const totalPieces = gridSize * gridSize;
+// Function to swap two cups visually
+const swapCups = (index1, index2) => {
+    const currentCups = Array.from(cupsContainer.querySelectorAll('.cup'));
+    const cup1 = currentCups[index1];
+    const cup2 = currentCups[index2];
 
-let board = [];
-let draggedPiece = null;
+    if (!cup1 || !cup2) return;
 
-const shuffleArray = (array) => {
-  const shuffled = [...array];
-  return shuffled.sort(() => Math.random() - 0.5);
-};
+    // Get positions
+    const rect1 = cup1.getBoundingClientRect();
+    const rect2 = cup2.getBoundingClientRect();
 
-const generateInitialBoard = () => {
-  const pieces = Array.from({ length: totalPieces }, (_, index) => index);
-  return shuffleArray(pieces);
-};
+    // Calculate relative positions
+    const x1 = rect1.left + rect1.width / 2;
+    const y1 = rect1.top + rect1.height / 2;
+    const x2 = rect2.left + rect2.width / 2;
+    const y2 = rect2.top + rect2.height / 2;
 
-const getPieceStyle = (index) => {
-  const pieceValue = board[index];
-  const col = pieceValue % gridSize;
-  const row = Math.floor(pieceValue / gridSize);
-  const backgroundPositionX = col * (100 / (gridSize - 1));
-  const backgroundPositionY = row * (100 / (gridSize - 1));
+    // Calculate distances
+    const deltaX = x2 - x1;
+    const deltaY = y2 - y1;
 
-  return {
-    backgroundImage: `url(${imageSrc})`,
-    backgroundSize: `${gridSize * 100}% ${gridSize * 100}%`,
-    backgroundPosition: `${backgroundPositionX}% ${backgroundPositionY}%`,
-  };
-};
+    // Add shuffling class
+    cup1.classList.add('shuffling');
+    cup2.classList.add('shuffling');
 
-const isSolved = () => {
-  return board.every((value, index) => value === index);
-};
+    // Animate swap
+    cup1.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+    cup2.style.transform = `translate(${-deltaX}px, ${-deltaY}px)`;
 
-const checkWin = () => {
-  if (isSolved()) {
-    const winModal = document.getElementById('winModal');
-    if (winModal) {
-      winModal.style.display = 'flex';
-    }
-  } else {
-    const winModal = document.getElementById('winModal');
-    if (winModal) {
-      winModal.style.display = 'none';
-    }
-  }
-};
+    // After animation, swap in DOM and reset transforms
+    setTimeout(() => {
+        // Swap positions in DOM
+        const parent = cupsContainer;
+        const next1 = cup1.nextSibling;
+        const next2 = cup2.nextSibling;
 
-const renderBoard = () => {
-  const puzzleBoard = document.getElementById('puzzleBoard');
-  if (!puzzleBoard) return;
-
-  puzzleBoard.innerHTML = '';
-
-  board.forEach((_, index) => {
-    const piece = document.createElement('div');
-    piece.className = 'puzzle-piece';
-    piece.draggable = true;
-    piece.dataset.index = index; // Store index for touch events
-
-    const style = getPieceStyle(index);
-    piece.style.backgroundImage = style.backgroundImage;
-    piece.style.backgroundSize = style.backgroundSize;
-    piece.style.backgroundPosition = style.backgroundPosition;
-
-    // Mouse drag and drop events
-    piece.addEventListener('dragstart', (e) => {
-      draggedPiece = index;
-      e.dataTransfer.effectAllowed = 'move';
-      piece.classList.add('touching');
-    });
-
-    piece.addEventListener('dragend', () => {
-      piece.classList.remove('touching');
-    });
-
-    piece.addEventListener('dragover', (e) => {
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-    });
-
-    piece.addEventListener('drop', (e) => {
-      e.preventDefault();
-      piece.classList.remove('touching');
-      if (draggedPiece !== null && draggedPiece !== index) {
-        const newBoard = [...board];
-        const temp = newBoard[index];
-        newBoard[index] = board[draggedPiece];
-        newBoard[draggedPiece] = temp;
-        board = newBoard;
-        renderBoard();
-        checkWin();
-      }
-      draggedPiece = null;
-    });
-
-    // Touch events for tablet
-    let touchStartX = 0;
-    let touchStartY = 0;
-
-    piece.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      draggedPiece = index;
-      piece.classList.add('touching');
-      const touch = e.touches[0];
-      touchStartX = touch.clientX;
-      touchStartY = touch.clientY;
-    }, { passive: false });
-
-    piece.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-    }, { passive: false });
-
-    piece.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      piece.classList.remove('touching');
-      if (draggedPiece === null) return;
-
-      const touch = e.changedTouches[0];
-      const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-
-      if (elementBelow && elementBelow.classList.contains('puzzle-piece')) {
-        const targetIndex = parseInt(elementBelow.dataset.index);
-        if (!isNaN(targetIndex) && targetIndex !== index) {
-          const newBoard = [...board];
-          const temp = newBoard[targetIndex];
-          newBoard[targetIndex] = board[draggedPiece];
-          newBoard[draggedPiece] = temp;
-          board = newBoard;
-          renderBoard();
-          checkWin();
+        if (next1 === cup2) {
+            parent.insertBefore(cup2, cup1);
+        } else if (next2 === cup1) {
+            parent.insertBefore(cup1, cup2);
+        } else {
+            parent.insertBefore(cup2, next1);
+            parent.insertBefore(cup1, next2);
         }
-      }
-      draggedPiece = null;
-    }, { passive: false });
 
-    puzzleBoard.appendChild(piece);
-  });
+        // Reset transforms
+        cup1.style.transform = '';
+        cup2.style.transform = '';
+        cup1.classList.remove('shuffling');
+        cup2.classList.remove('shuffling');
+
+        // Update cup indices
+        updateCupIndices();
+    }, 800); // Match CSS transition duration
 };
 
-const resetGame = () => {
-  // Hide modal if visible
-  const winModal = document.getElementById('winModal');
-  if (winModal) {
-    winModal.style.display = 'none';
-  }
-
-  board = generateInitialBoard();
-  draggedPiece = null;
-  renderBoard();
-  checkWin();
-};
-
-// Reset game with a new random image
-const resetGameWithNewImage = () => {
-  selectNewRandomImage();
-  updateSourceImage();
-  resetGame();
-};
-
-// Update the source image in the HTML
-const updateSourceImage = () => {
-  const sourceImage = document.querySelector('.puzzle-source-image');
-  const sourceLink = document.getElementById('sourceImageLink');
-  if (sourceImage) {
-    sourceImage.src = imageSrc;
-    sourceImage.alt = 'Puzzle image';
-    
-    // Update CSS variable when image loads to match actual rendered size
-    sourceImage.onload = () => {
-      updatePuzzleSize();
-    };
-    
-    // Also update if image is already loaded
-    if (sourceImage.complete) {
-      updatePuzzleSize();
+// Function to shuffle cups
+const shuffleCups = () => {
+    if (shuffleCount >= maxShuffles) {
+        stopShuffling();
+        return;
     }
-  }
-  if (sourceLink) {
-    sourceLink.href = imageSrc;
-  }
-};
-
-// Update puzzle piece sizes based on actual image size
-const updatePuzzleSize = () => {
-  const sourceImage = document.querySelector('.puzzle-source-image');
-  const puzzleBoard = document.getElementById('puzzleBoard');
-  
-  if (sourceImage && puzzleBoard) {
-    // Get the actual rendered size of the image (considering object-fit: contain)
-    const rect = sourceImage.getBoundingClientRect();
-    const actualSize = Math.min(rect.width, rect.height);
     
-    // Set CSS variable on the container so puzzle pieces scale accordingly
-    const container = sourceImage.closest('.puzzle-container');
-    if (container) {
-      container.style.setProperty('--image-size', `${actualSize}px`);
-      
-      // Also update grid gap proportionally
-      const baseGap = 8;
-      const gapRatio = actualSize / 280; // 280 is the base image size
-      container.style.setProperty('--grid-gap', `${baseGap * gapRatio}px`);
+    // Randomly choose two cups to swap (from current DOM order)
+    const indices = [0, 1, 2];
+    const shuffled = indices.sort(() => Math.random() - 0.5);
+    const index1 = shuffled[0];
+    const index2 = shuffled[1];
+    
+    // Update ball position: if ball is under one of the swapped cups, it moves to the other position
+    if (ballPosition === index1) {
+        ballPosition = index2;
+    } else if (ballPosition === index2) {
+        ballPosition = index1;
     }
-  }
+    // If ball is at the third position, it stays there
+    
+    // Swap cups visually
+    swapCups(index1, index2);
+    
+    shuffleCount++;
 };
 
-// Initialize the game when the page loads
-window.addEventListener('DOMContentLoaded', () => {
-  updateSourceImage();
-  resetGame();
-  
-  // Update puzzle size on window resize
-  let resizeTimeout;
-  window.addEventListener('resize', () => {
-    clearTimeout(resizeTimeout);
-    resizeTimeout = setTimeout(() => {
-      updatePuzzleSize();
+// Function to start shuffling
+const startShuffling = () => {
+    isShuffling = true;
+    shuffleCount = 0;
+    canGuess = false;
+    playButton.disabled = true;
+    instructionText.textContent = 'Obserwuj kubki uważnie...';
+    
+    // Hide all balls
+    balls.forEach(ball => {
+        ball.classList.remove('visible');
+    });
+    
+    // Start shuffling with slower interval for kids (1200ms = 1.2 seconds)
+    shuffleInterval = setInterval(() => {
+        shuffleCups();
+    }, 1200);
+};
+
+// Function to stop shuffling
+const stopShuffling = () => {
+    if (shuffleInterval) {
+        clearInterval(shuffleInterval);
+        shuffleInterval = null;
+    }
+    
+    isShuffling = false;
+    canGuess = true;
+    playButton.disabled = false;
+    playButton.textContent = 'Zagraj ponownie';
+    instructionText.textContent = 'Który kubek ukrywa świąteczną kulkę? Kliknij!';
+    
+    // Update cup indices after DOM changes
+    setTimeout(() => {
+        updateCupIndices();
     }, 100);
-  });
+};
+
+// Update cup indices after DOM reordering
+const updateCupIndices = () => {
+    const currentCups = Array.from(cupsContainer.querySelectorAll('.cup'));
+    currentCups.forEach((cup, index) => {
+        cup.dataset.index = index;
+    });
+};
+
+// Function to handle cup click
+const handleCupClick = (event) => {
+    if (!canGuess || isShuffling) return;
+    
+    const clickedCup = event.currentTarget;
+    const clickedIndex = parseInt(clickedCup.dataset.index);
+    
+    // Disable all cups
+    canGuess = false;
+    cups.forEach(cup => {
+        cup.style.pointerEvents = 'none';
+    });
+    
+    // Show the result
+    setTimeout(() => {
+        // Show the ball under the correct cup
+        const currentCups = Array.from(cupsContainer.querySelectorAll('.cup'));
+        const correctCup = currentCups[ballPosition];
+        if (correctCup) {
+            const correctBall = correctCup.querySelector('.ball');
+            if (correctBall) {
+                correctBall.classList.add('visible');
+            }
+        }
+        
+        // Check if correct
+        if (clickedIndex === ballPosition) {
+            // Win!
+            resultTitle.textContent = '🎉 Gratulacje! 🎉';
+            resultMessage.textContent = 'Znalazłeś świąteczną kulkę!';
+            resultModal.style.display = 'flex';
+            clickedCup.classList.add('selected');
+        } else {
+            // Lose - show all balls briefly
+            balls.forEach(ball => {
+                ball.classList.add('visible');
+            });
+            resultTitle.textContent = '😊 Spróbuj ponownie!';
+            resultMessage.textContent = `Kulka była pod innym kubkiem. Zagraj jeszcze raz!`;
+            resultModal.style.display = 'flex';
+        }
+    }, 500);
+};
+
+// Function to start/reset game
+const startGame = () => {
+    // Hide modal
+    resultModal.style.display = 'none';
+    
+    // Reset state
+    ballPosition = Math.floor(Math.random() * 3);
+    isShuffling = false;
+    canGuess = false;
+    shuffleCount = 0;
+    
+    // Reset UI
+    playButton.textContent = 'Mieszam kubki...';
+    playButton.disabled = true;
+    instructionText.textContent = 'Przygotowuję grę...';
+    
+    // Reset cup styles
+    cups.forEach(cup => {
+        cup.style.pointerEvents = 'auto';
+        cup.style.transform = '';
+        cup.classList.remove('selected', 'shuffling');
+    });
+    
+    // Reset ball positions - hide all balls
+    balls.forEach(ball => {
+        ball.classList.remove('visible');
+    });
+    
+    // Reset DOM order
+    cupsContainer.innerHTML = '';
+    cups.forEach((cup, index) => {
+        cup.dataset.index = index;
+        cupsContainer.appendChild(cup);
+    });
+    
+    // Show ball briefly before starting
+    setTimeout(() => {
+        const currentCups = Array.from(cupsContainer.querySelectorAll('.cup'));
+        const cupWithBall = currentCups[ballPosition];
+        if (cupWithBall) {
+            const ballToShow = cupWithBall.querySelector('.ball');
+            if (ballToShow) {
+                ballToShow.classList.add('visible');
+            }
+        }
+        instructionText.textContent = 'Obserwuj, gdzie jest kulka!';
+        
+        setTimeout(() => {
+            balls.forEach(ball => ball.classList.remove('visible'));
+            startShuffling();
+        }, 2000); // Show for 2 seconds
+    }, 500);
+};
+
+// Function to reset game (called from modal)
+const resetGame = () => {
+    startGame();
+};
+
+// Add click event listeners to cups
+cups.forEach(cup => {
+    cup.addEventListener('click', handleCupClick);
 });
 
+// Initialize game on page load
+window.addEventListener('DOMContentLoaded', () => {
+    // Don't auto-start, wait for button click
+    playButton.textContent = 'Zagraj';
+    instructionText.textContent = 'Kliknij "Zagraj" aby rozpocząć!';
+    
+    // Show initial ball position briefly
+    setTimeout(() => {
+        const currentCups = Array.from(cupsContainer.querySelectorAll('.cup'));
+        const cupWithBall = currentCups[ballPosition];
+        if (cupWithBall) {
+            const ballToShow = cupWithBall.querySelector('.ball');
+            if (ballToShow) {
+                ballToShow.classList.add('visible');
+                setTimeout(() => {
+                    ballToShow.classList.remove('visible');
+                }, 1500);
+            }
+        }
+    }, 500);
+});
