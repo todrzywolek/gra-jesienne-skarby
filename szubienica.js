@@ -1,5 +1,13 @@
 var slowa = ["LÓD", "ZIMA", "MRÓZ", "ŚNIEG", "BAŁWAN", "SANKI", "ŁYŻWY", "CZAPKA"];
-var wskazowki = ["Mrożna woda", "Chłodna pora roku", "Zimny powiew", "Biały puch pada z nieba", "Figura z śniegu", "Śnieżne saneczki", "Buty na śniegu", "Nosisz na głowie"];
+var wskazowki = [
+	"Zamarznięta woda, po której można się ślizgać np na lodowisku",
+	"Pora roku, kiedy jest zimno i czekamy na prezenty od Mikołaja",
+	"Gdy jest bardzo zimno na dworze i szczypie nas w policzki",
+	"Biały i zimny puch, który spada z nieba",
+	"Ma trzy kule, miotłę w ręku i marchewkę zamiast nosa",
+	"Służą do zjeżdżania z ośnieżonej górki",
+	"Specjalne buty, w których jeździmy po lodowisku",
+	"Zakładasz ją na głowę, żeby było Ci ciepło w uszy"];
 
 var haslo = slowa[Math.floor(Math.random() * slowa.length)];
 haslo = haslo.toUpperCase();
