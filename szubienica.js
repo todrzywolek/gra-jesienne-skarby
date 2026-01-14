@@ -1,16 +1,22 @@
 var slowa = ["LÓD", "ZIMA", "MRÓZ", "ŚNIEG", "BAŁWAN", "SANKI", "ŁYŻWY", "CZAPKA"];
+var wskazowki = ["Mrożna woda", "Chłodna pora roku", "Zimny powiew", "Biały puch pada z nieba", "Figura z śniegu", "Śnieżne saneczki", "Buty na śniegu", "Nosisz na głowie"];
+
 var haslo = slowa[Math.floor(Math.random() * slowa.length)];
 haslo = haslo.toUpperCase();
 
+var aktualny_indeks = slowa.indexOf(haslo);
 var dlugosc = haslo.length;
 var ile_skuch = 0;
+var wskazowka_uzyta = false;
 
 function nowaGra()
 {
 	haslo = slowa[Math.floor(Math.random() * slowa.length)];
 	haslo = haslo.toUpperCase();
+	aktualny_indeks = slowa.indexOf(haslo);
 	dlugosc = haslo.length;
 	ile_skuch = 0;
+	wskazowka_uzyta = false;
 	haslo1 = "";
 
 	for (i=0; i<dlugosc; i++)
@@ -19,9 +25,23 @@ function nowaGra()
 		else haslo1 = haslo1 + "-";
 	}
 
+	document.getElementById("wskazowka").innerHTML = "";
+	document.getElementById("przycisk-wskazowka").disabled = false;
+	document.getElementById("przycisk-wskazowka").style.opacity = "1";
 	wypisz_haslo();
 	document.getElementById("szubienica").innerHTML = '<img src="img/s0.jpg" alt="" />';
 	start();
+}
+
+function pokazWskazowke()
+{
+	if (!wskazowka_uzyta)
+	{
+		document.getElementById("wskazowka").innerHTML = "<strong>Podpowiedź:</strong> " + wskazowki[aktualny_indeks];
+		wskazowka_uzyta = true;
+		document.getElementById("przycisk-wskazowka").disabled = true;
+		document.getElementById("przycisk-wskazowka").style.opacity = "0.5";
+	}
 }
 
 var yes = new Audio("yes.wav");
