@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Łap Motyle!</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(180deg, #87CEEB 0%, #b8f0a0 70%, #7ec850 100%);
+            min-height: 100vh;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Clouds */
+        .cloud {
+            position: absolute;
+            background: white;
+            border-radius: 50px;
+            opacity: 0.85;
+        }
+        .cloud::before, .cloud::after {
+            content: '';
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+        }
+
+        /* Top HUD */
+        .hud {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 16px;
+            background: rgba(255,255,255,0.3);
+            backdrop-filter: blur(4px);
+        }
+
+        .stat-box {
+            background: white;
+            border-radius: 20px;
+            padding: 6px 18px;
+            font-size: clamp(1rem, 4vw, 1.4rem);
+            color: #3a7a00;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+            font-weight: bold;
+        }
+
+        .timer-box {
+            background: white;
+            border-radius: 20px;
+            padding: 6px 18px;
+            font-size: clamp(1rem, 4vw, 1.4rem);
+            font-weight: bold;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+        }
+
+        .timer-box.urgent {
+            background: #ff4444;
+            color: white;
+            animation: pulse 0.5s infinite alternate;
+        }
+
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to   { transform: scale(1.07); }
+        }
+
+        /* Butterflies */
+        .butterfly {
+            position: absolute;
+            font-size: clamp(2.8rem, 10vw, 5rem);
+            cursor: pointer;
+            transition: transform 0.1s;
+            animation: flutter 0.3s infinite alternate ease-in-out;
+            filter: drop-shadow(0 3px 6px rgba(0,0,0,0.2));
+            z-index: 10;
+            line-height: 1;
+        }
+
+        @keyframes flutter {
+            from { transform: scaleX(1)   rotate(-5deg); }
+            to   { transform: scaleX(0.75) rotate(5deg); }
+        }
+
+        .butterfly:active {
+            transform: scale(1.4);
+        }
+
+        /* Pop effect */
+        .pop {
+            position: absolute;
+            font-size: clamp(1.5rem, 6vw, 2.5rem);
+            pointer-events: none;
+            z-index: 20;
+            animation: popFade 0.7s ease forwards;
+            font-weight: bold;
+        }
+
+        @keyframes popFade {
+            0%   { transform: scale(0.5) translateY(0);   opacity: 1; }
+            100% { transform: scale(1.3) translateY(-60px); opacity: 0; }
+        }
+
+        /* Flower decoration */
+        .flower {
+            position: absolute;
+            font-size: clamp(1.8rem, 6vw, 3rem);
+            pointer-events: none;
+            bottom: 0;
+        }
+
+        /* Overlays */
+        .overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .overlay.show { display: flex; }
+
+        .box {
+            background: white;
+            border-radius: 30px;
+            padding: 40px 30px;
+            text-align: center;
+            max-width: 380px;
+            width: 90%;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0%   { transform: scale(0.4); opacity: 0; }
+            100% { transform: scale(1);   opacity: 1; }
+        }
+
+        .box .big-emoji { font-size: 4rem; margin-bottom: 8px; }
+        .box h2 { font-size: 2rem; color: #3a7a00; margin-bottom: 6px; }
+        .box p  { font-size: 1.2rem; color: #555; margin-bottom: 16px; }
+        .stars  { font-size: 2.5rem; margin: 8px 0; letter-spacing: 4px; }
+
+        .btn {
+            background: linear-gradient(145deg, #6be07a, #2ec95a);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(46, 201, 90, 0.4);
+            font-weight: bold;
+            transition: transform 0.1s;
+        }
+
+        .btn:active { transform: scale(0.95); }
+
+        .back-link {
+            display: block;
+            margin-top: 14px;
+            color: #aaa;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+
+        .back-link:hover { color: #3a7a00; }
+    </style>
+</head>
+<body>
+
+    <div class="hud">
+        <div class="stat-box">🦋 <span id="score">0</span></div>
+        <div class="timer-box" id="timerBox">⏱ <span id="timer">60</span>s</div>
+        <button class="btn" id="restartBtn" style="padding:8px 16px;font-size:0.95rem;">Nowa gra</button>
+    </div>
+
+    <div id="gameArea"></div>
+
+    <!-- Start overlay -->
+    <div class="overlay show" id="startOverlay">
+        <div class="box">
+            <div class="big-emoji">🦋</div>
+            <h2>Łap Motyle!</h2>
+            <p>Stukaj w motyle zanim uciekną!<br>Masz <strong>60 sekund</strong>.</p>
+            <button class="btn" id="startBtn">Start!</button>
+        </div>
+    </div>
+
+    <!-- End overlay -->
+    <div class="overlay" id="endOverlay">
+        <div class="box">
+            <div class="big-emoji" id="endEmoji">🎉</div>
+            <h2 id="endTitle">Świetnie!</h2>
+            <p id="endMsg">Złapałeś motyle!</p>
+            <div class="stars" id="endStars"></div>
+            <button class="btn" id="playAgainBtn">Zagraj jeszcze raz!</button>
+            <a href="index.html" class="back-link">← Wróć do menu</a>
+        </div>
+    </div>
+
+    <script>
+        const BUTTERFLIES = ['🦋','🦋','🦋','🦋','🌺','🐝','🦋','🦋'];
+        const BUTTERFLY_EMOJIS = ['🦋'];
+        const SPECIAL = { '🌺': 3, '🐝': -1 };
+        const GAME_DURATION = 60;
+        const MAX_ON_SCREEN = 6;
+
+        let score = 0;
+        let timeLeft = GAME_DURATION;
+        let timerInterval = null;
+        let spawnInterval = null;
+        let butterflies = [];
+        let gameRunning = false;
+        let butterflyId = 0;
+
+        const gameArea = document.getElementById('gameArea');
+        const scoreEl  = document.getElementById('score');
+        const timerEl  = document.getElementById('timer');
+        const timerBox = document.getElementById('timerBox');
+
+        // Place flowers along the bottom
+        function buildFlowers() {
+            const flowers = ['🌸','🌷','🌼','🌻','🌺','🌸','🌷','🌼','🌻','🌺','🌸','🌷'];
+            const count = Math.ceil(window.innerWidth / 60);
+            for (let i = 0; i < count; i++) {
+                const f = document.createElement('div');
+                f.className = 'flower';
+                f.textContent = flowers[i % flowers.length];
+                f.style.left = (i * (100 / count)) + 'vw';
+                gameArea.appendChild(f);
+            }
+        }
+
+        // Random float between a and b
+        function rnd(a, b) { return a + Math.random() * (b - a); }
+
+        function spawnButterfly() {
+            if (!gameRunning) return;
+            if (butterflies.length >= MAX_ON_SCREEN) return;
+
+            const id = butterflyId++;
+            const roll = Math.random();
+            let emoji, points;
+            if (roll < 0.08) { emoji = '🌺'; points = 3; }
+            else if (roll < 0.14) { emoji = '🐝'; points = -1; }
+            else { emoji = '🦋'; points = 1; }
+
+            const el = document.createElement('div');
+            el.className = 'butterfly';
+            el.textContent = emoji;
+            el.dataset.id = id;
+
+            // Random start position on edges
+            const side = Math.floor(Math.random() * 2); // 0=left, 1=right
+            const vhRange = [12, 75];
+            const startY = rnd(vhRange[0], vhRange[1]);
+            const startX = side === 0 ? -8 : 108;
+            el.style.top  = startY + 'vh';
+            el.style.left = startX + 'vw';
+
+            gameArea.appendChild(el);
+
+            const duration = rnd(9000, 14000);
+            const targetX = side === 0 ? rnd(5, 90) : rnd(5, 90);
+            const targetY = rnd(vhRange[0], vhRange[1]);
+            const exitX   = side === 0 ? 112 : -12;
+
+            // Animate: fly to a spot, hover, then exit
+            let startTime = null;
+            const phase1Duration = duration * 0.25;
+            const hoverDuration  = duration * 0.55;
+            const phase2Duration = duration * 0.20;
+
+            function animate(ts) {
+                if (!gameRunning) { el.remove(); return; }
+                if (!startTime) startTime = ts;
+                const elapsed = ts - startTime;
+
+                let x, y;
+                if (elapsed < phase1Duration) {
+                    const t = elapsed / phase1Duration;
+                    const ease = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+                    x = startX + (targetX - startX) * ease;
+                    y = startY + (targetY - startY) * ease + Math.sin(t * Math.PI * 3) * 4;
+                } else if (elapsed < phase1Duration + hoverDuration) {
+                    const t = (elapsed - phase1Duration) / hoverDuration;
+                    x = targetX + Math.sin(t * Math.PI * 4) * 2;
+                    y = targetY + Math.cos(t * Math.PI * 3) * 3;
+                } else {
+                    const t = (elapsed - phase1Duration - hoverDuration) / phase2Duration;
+                    if (t >= 1) {
+                        el.remove();
+                        butterflies = butterflies.filter(b => b.id !== id);
+                        return;
+                    }
+                    const ease = t * t;
+                    x = targetX + (exitX - targetX) * ease;
+                    y = targetY + Math.sin(t * Math.PI * 2) * 5;
+                }
+
+                el.style.left = x + 'vw';
+                el.style.top  = y + 'vh';
+                requestAnimationFrame(animate);
+            }
+
+            requestAnimationFrame(animate);
+
+            el.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                if (!gameRunning) return;
+
+                catchButterfly(el, id, points, emoji);
+            });
+
+            butterflies.push({ id, el });
+        }
+
+        function catchButterfly(el, id, points, emoji) {
+            const rect = el.getBoundingClientRect();
+            el.remove();
+            butterflies = butterflies.filter(b => b.id !== id);
+
+            score = Math.max(0, score + points);
+            scoreEl.textContent = score;
+
+            // Pop label
+            const pop = document.createElement('div');
+            pop.className = 'pop';
+            pop.style.left = rect.left + 'px';
+            pop.style.top  = rect.top  + 'px';
+            pop.style.color = points > 0 ? (points > 1 ? '#ff8800' : '#2ec95a') : '#ff4444';
+            pop.textContent = points > 0 ? '+' + points : points;
+            document.body.appendChild(pop);
+            setTimeout(() => pop.remove(), 700);
+        }
+
+        function startGame() {
+            score = 0;
+            timeLeft = GAME_DURATION;
+            gameRunning = true;
+            scoreEl.textContent = '0';
+            timerEl.textContent = GAME_DURATION;
+            timerBox.classList.remove('urgent');
+            butterflies = [];
+            butterflyId = 0;
+
+            // Clear any leftover butterflies
+            document.querySelectorAll('.butterfly').forEach(el => el.remove());
+
+            document.getElementById('startOverlay').classList.remove('show');
+            document.getElementById('endOverlay').classList.remove('show');
+
+            // Spawn loop
+            spawnInterval = setInterval(() => {
+                const count = 1 + Math.floor((GAME_DURATION - timeLeft) / 30);
+                for (let i = 0; i < count; i++) spawnButterfly();
+            }, 2000);
+
+            // Timer
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                timerEl.textContent = timeLeft;
+                if (timeLeft <= 10) timerBox.classList.add('urgent');
+                if (timeLeft <= 0) endGame();
+            }, 1000);
+        }
+
+        function endGame() {
+            gameRunning = false;
+            clearInterval(timerInterval);
+            clearInterval(spawnInterval);
+
+            setTimeout(() => {
+                document.querySelectorAll('.butterfly').forEach(el => el.remove());
+                butterflies = [];
+
+                const s = score;
+                let emoji, title, msg, stars;
+                if (s >= 20) { emoji='🏆'; title='Mistrz!';        msg=`Złapałeś ${s} motyli!`;     stars='⭐⭐⭐'; }
+                else if (s >= 10) { emoji='🎉'; title='Świetnie!'; msg=`Złapałeś ${s} motyli!`;     stars='⭐⭐'; }
+                else { emoji='🌸'; title='Dobra robota!';           msg=`Złapałeś ${s} motyli!`;     stars='⭐'; }
+
+                document.getElementById('endEmoji').textContent  = emoji;
+                document.getElementById('endTitle').textContent  = title;
+                document.getElementById('endMsg').textContent    = msg;
+                document.getElementById('endStars').textContent  = stars;
+                document.getElementById('endOverlay').classList.add('show');
+            }, 400);
+        }
+
+        document.getElementById('startBtn').addEventListener('click', startGame);
+        document.getElementById('playAgainBtn').addEventListener('click', startGame);
+        document.getElementById('restartBtn').addEventListener('click', () => {
+            clearInterval(timerInterval);
+            clearInterval(spawnInterval);
+            gameRunning = false;
+            setTimeout(startGame, 50);
+        });
+
+        buildFlowers();
+    </script>
+</body>
+</html>
