@@ -1,32 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Bubble Shooter Game</title>
-    <link rel="stylesheet" href="bubble-game.css">
+    <title>Wiosenne Gry</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+        }
+
+        body {
+            background: linear-gradient(160deg, #a8edea, #fed6e3, #ffecd2);
+            min-height: 100vh;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: clamp(1.8rem, 7vw, 3rem);
+            color: #5a3e8a;
+            text-shadow: 3px 3px 0 #fff;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: clamp(1rem, 3.5vw, 1.4rem);
+            color: #888;
+            margin-bottom: 40px;
+        }
+
+        .games {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 100%;
+            max-width: 420px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 28px;
+            padding: 28px 24px;
+            text-decoration: none;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            transition: transform 0.15s, box-shadow 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .game-card:active {
+            transform: scale(0.97);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .game-icon {
+            font-size: clamp(3rem, 12vw, 5rem);
+            flex-shrink: 0;
+        }
+
+        .game-info {
+            text-align: left;
+        }
+
+        .game-info h2 {
+            font-size: clamp(1.2rem, 4.5vw, 1.6rem);
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .game-info p {
+            font-size: clamp(0.85rem, 3vw, 1rem);
+            color: #888;
+            line-height: 1.4;
+        }
+
+        .game-card.green  { border-left: 8px solid #4cce6e; }
+        .game-card.purple { border-left: 8px solid #9b59b6; }
+
+        .footer {
+            margin-top: 40px;
+            font-size: 0.85rem;
+            color: #bbb;
+        }
+    </style>
 </head>
 <body>
-    <div class="game-container">
-        <div class="game-header">
-            <div class="score-board">
-                <span class="label">WYNIK</span>
-                <span class="score-value" id="score">0</span>
-            </div>
-            <button class="restart-btn" id="restartBtn">NOWA GRA</button>
-        </div>
+    <h1>Wiosenne Gry 🌸</h1>
+    <p class="subtitle">Wybierz grę i baw się dobrze!</p>
 
-        <canvas id="gameCanvas"></canvas>
-
-        <div class="game-over-screen" id="gameOverScreen">
-            <div class="game-over-content">
-                <h1 id="gameOverTitle">Koniec Gry!</h1>
-                <p class="final-score">Wynik: <span id="finalScore">0</span></p>
-                <button class="play-again-btn" id="playAgainBtn">ZAGRAJ JESZCZE RAZ</button>
+    <div class="games">
+        <a class="game-card green" href="motyle.html">
+            <div class="game-icon">🦋</div>
+            <div class="game-info">
+                <h2>Łap Motyle!</h2>
+                <p>Stukaj w motyle zanim uciekną. Masz 60 sekund — ile złapiesz?</p>
             </div>
-        </div>
+        </a>
+
+        <a class="game-card purple" href="memory-zwierzeta.html">
+            <div class="game-icon">🐣</div>
+            <div class="game-info">
+                <h2>Memory: Zwierzątka</h2>
+                <p>Znajdź wszystkie pary wiosennych zwierzątek. Ile ruchów ci zajmie?</p>
+            </div>
+        </a>
     </div>
 
-    <script src="bubble-game.js"></script>
+    <div class="footer">Wiosna 2026 🌱</div>
 </body>
 </html>
